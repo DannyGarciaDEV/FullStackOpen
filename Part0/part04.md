@@ -1,1 +1,1 @@
-![Part 04 of the exercise](./assets/part0hw/part04.png)
+![Part 04 of the exercise](/assets/part0/part04.png)
