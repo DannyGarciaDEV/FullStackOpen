@@ -1,128 +1,193 @@
 import React, { useState, useEffect } from 'react';
-import phonebookService from './phonebookService.jsx';
+import personServices from './services/persons.jsx';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const Filter = ({ searchTerm, setSearchTerm }) => {
+const Heading = ({ text }) => {
+  return <h2>{text}</h2>;
+};
+
+const Filter = ({ text, value, handleNewChange }) => {
   return (
     <div>
-      filter shown with <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+      {text} <input value={value} onChange={handleNewChange} />
     </div>
   );
 };
 
-const PersonForm = ({ addPerson, newName, setNewName, newNumber, setNewNumber }) => {
+const Part = ({ text, value, handleNewChange }) => {
   return (
-    <form onSubmit={addPerson}>
-      <div>
-        name: <input value={newName} onChange={(e) => setNewName(e.target.value)} />
-      </div>
-      <div>
-        number: <input value={newNumber} onChange={(e) => setNewNumber(e.target.value)} />
-      </div>
-      <div>
-        <button type="submit">add</button>
-      </div>
+    <div>
+      {text} <input value={value} onChange={handleNewChange} />
+    </div>
+  );
+};
+
+const Button = ({ type, text, handleNewChange }) => {
+  return (
+    <button type={type} onClick={handleNewChange}>
+      {text}
+    </button>
+  );
+};
+
+const PersonForm = ({ onSubmit, newName, newNumber, handleNewName, handleNewNumber }) => {
+  return (
+    <form onSubmit={onSubmit}>
+      <Part text="name:" value={newName} handleNewChange={handleNewName} />
+      <Part text="number:" value={newNumber} handleNewChange={handleNewNumber} />
+      <Button text="add" type="submit" />
     </form>
   );
 };
 
-const Persons = ({ persons, searchTerm, deletePerson }) => {
-  return (
-    <div>
-      {persons
-        .filter(person => person.name.toLowerCase().includes(searchTerm.toLowerCase()))
-        .map((person, index) => (
-          <div key={index}>
-            {person.name} {person.number}
-            <button onClick={() => deletePerson(person.id)}>Delete</button>
-          </div>
-        ))}
-    </div>
-  );
+const Persons = ({ personAfterFilter }) => {
+  return <ul>{personAfterFilter}</ul>;
+};
+
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null;
+  }
+
+  return <div className="error">{message}</div>;
 };
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filterName, setFilterName] = useState('');
+  const [changeMessage, setChangeMessage] = useState('');
 
   useEffect(() => {
-    phonebookService.getAll()
-      .then(initialPersons => {
-        setPersons(initialPersons);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
+    personServices.getAll().then((initialResult) => {
+      setPersons(initialResult);
+    });
   }, []);
 
-  const addPerson = (event) => {
+  const addPerson = async (event) => {
     event.preventDefault();
+    const newPerson = {
+      name: newName,
+      number: newNumber,
+    };
 
-    const existingPerson = persons.find(person => person.name === newName);
+    const checkName = persons.find(
+      (props) => props.name.toLowerCase() === newPerson.name.toLowerCase()
+    );
+    const changedPerson = { ...checkName, number: newNumber };
 
-    if (existingPerson) {
-      const confirmUpdate = window.confirm(`${newName} is already added to the phonebook. Do you want to update the number?`);
-
-      if (confirmUpdate) {
-        phonebookService.update(existingPerson.id, { ...existingPerson, number: newNumber })
-          .then(updatedPerson => {
-            setPersons(persons.map(person => (person.id !== updatedPerson.id ? person : updatedPerson)));
-            setNewName('');
-            setNewNumber('');
-          })
-          .catch(error => {
-            console.error('Error updating person:', error);
-          });
-      }
-    } else {
-      const newPerson = { name: newName, number: newNumber };
-
-      phonebookService.create(newPerson)
-        .then(createdPerson => {
-          setPersons([...persons, createdPerson]);
+    if (checkName && checkName.number === newPerson.number) {
+      toast.error(`${newName} is already added to phonebook`);
+    } else if (checkName && checkName.number !== newPerson.number) {
+      if (
+        window.confirm(
+          `${newName} is already added to phonebook, replace the old number with a new one?`
+        )
+      ) {
+        try {
+          const returnedPerson = await personServices.updatePerson(
+            checkName.id,
+            changedPerson
+          );
+          setPersons(
+            persons.map((n) => (n.id !== checkName.id ? n : returnedPerson))
+          );
           setNewName('');
           setNewNumber('');
-        })
-        .catch(error => {
-          console.error('Error adding person:', error);
-        });
+          setTimeout(() => {
+            toast.success(`Number of ${newName} is changed`);
+          }, 5000);
+        } catch (error) {
+          toast.error(
+            `Information of ${newName} has already been removed from the server`
+          );
+        }
+      }
+    } else {
+      try {
+        const returnedPerson = await personServices.create(newPerson);
+        setPersons(persons.concat(returnedPerson));
+        setNewName('');
+        setNewNumber('');
+        toast.success(`Successfully added ${newName}`);
+        setTimeout(() => {
+          toast.dismiss();
+        }, 5000);
+      } catch (error) {
+        toast.error(`[Error] ${error.response.data.error}`);
+      }
     }
   };
 
-  const deletePerson = (id) => {
-    const confirmDeletion = window.confirm('Do you really want to delete this person?');
+  const handleNewName = (event) => {
+    setNewName(event.target.value);
+  };
 
-    if (confirmDeletion) {
-      phonebookService.remove(id)
-        .then(() => {
-          setPersons(persons.filter(person => person.id !== id));
-        })
-        .catch(error => {
+  const handleNewNumber = (event) => {
+    setNewNumber(event.target.value);
+  };
+
+  const handleNewFilter = (event) => {
+    setFilterName(event.target.value);
+  };
+
+  const filter = persons
+    ? persons.filter((props) =>
+        props.name.toLowerCase().includes(filterName.toLowerCase())
+      )
+    : [];
+
+    const deletePerson = async (id, name) => {
+      if (window.confirm(`Delete ${name}?`)) {
+        try {
+          await personServices.removePerson(id);
+          setPersons(persons.filter((p) => p.id !== id));
+          toast.success(`Successfully deleted ${name}`);
+        } catch (error) {
           console.error('Error deleting person:', error);
-        });
-    }
+        }
+      }
+    };
+
+  const People = ({ name, number, id }) => {
+    return (
+      <li>
+        {name} {number}{' '}
+        <Button
+          text="delete"
+          type="button"
+          handleNewChange={() => deletePerson(id, name)}
+        />
+      </li>
+    );
   };
+
+  const personAfterFilter = filter.map((props) => (
+    <People key={props.id} name={props.name} number={props.number} id={props.id} />
+  ));
 
   return (
     <div>
-      <h2>Phonebook</h2>
-
-      <Filter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-
-      <h3>Add a new</h3>
-
-      <PersonForm
-        addPerson={addPerson}
-        newName={newName}
-        setNewName={setNewName}
-        newNumber={newNumber}
-        setNewNumber={setNewNumber}
+      <Heading text="Phonebook" />
+      <Notification message={changeMessage} />
+      <Filter
+        text="Filter shown with"
+        value={filterName}
+        handleNewChange={handleNewFilter}
       />
-
-      <h3>Numbers</h3>
-
-      <Persons persons={persons} searchTerm={searchTerm} deletePerson={deletePerson} />
+      <Heading text="Add a new" />
+      <PersonForm
+        onSubmit={addPerson}
+        newName={newName}
+        newNumber={newNumber}
+        handleNewName={handleNewName}
+        handleNewNumber={handleNewNumber}
+      />
+      <Heading text="Numbers" />
+      <Persons personAfterFilter={personAfterFilter} />
+      <ToastContainer />
     </div>
   );
 };
