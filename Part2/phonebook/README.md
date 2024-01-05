@@ -18,12 +18,21 @@ Follow these steps to set up and run the phonebook application.
 
    ```bash
    git clone <repository-url>
+
+   ```
+
+    ```bash
    cd phonebook
 
+```
 
-
+ ```bash
 npm install
+```
 
+ ```bash
 npx json-server --watch db.json --port 3001
-
+```
+ ```bash
 npm start
+```
