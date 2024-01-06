@@ -1,0 +1,27 @@
+.notification-container  {
+    display: flex;
+    flex-direction: column;
+   
+    text-align: center;
+   
+    background: white;
+   
+  }
+  
+   .success {
+    color: green;
+    border:2px solid green;
+    background-color: azure;
+    width: 100%;
+    
+
+  }
+ 
+  
+   .error {
+    color: red;
+    border: 1px solid red;
+    background-color: azure;
+    width: 100%;
+  
+  }
