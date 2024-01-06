@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import personServices from './services/persons.jsx';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './App.css'; // Import your CSS file
 
 const Heading = ({ text }) => {
   return <h2>{text}</h2>;
@@ -45,12 +46,16 @@ const Persons = ({ personAfterFilter }) => {
   return <ul>{personAfterFilter}</ul>;
 };
 
-const Notification = ({ message }) => {
+const Notification = ({ message, notificationType }) => {
   if (message === null) {
     return null;
   }
 
-  return <div className="error">{message}</div>;
+  return (
+    <div className={`notification-container ${notificationType}`}>
+      {message}
+    </div>
+  );
 };
 
 const App = () => {
@@ -59,6 +64,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('');
   const [filterName, setFilterName] = useState('');
   const [changeMessage, setChangeMessage] = useState('');
+  const [notificationType, setNotificationType] = useState('');
 
   useEffect(() => {
     personServices.getAll().then((initialResult) => {
@@ -79,7 +85,8 @@ const App = () => {
     const changedPerson = { ...checkName, number: newNumber };
 
     if (checkName && checkName.number === newPerson.number) {
-      toast.error(`${newName} is already added to phonebook`);
+      setNotificationType('error');
+      setChangeMessage(`${newName} is already added to phonebook`);
     } else if (checkName && checkName.number !== newPerson.number) {
       if (
         window.confirm(
@@ -96,11 +103,11 @@ const App = () => {
           );
           setNewName('');
           setNewNumber('');
-          setTimeout(() => {
-            toast.success(`Number of ${newName} is changed`);
-          }, 5000);
+          setNotificationType('success');
+          setChangeMessage(`Number of ${newName} is changed`);
         } catch (error) {
-          toast.error(
+          setNotificationType('error');
+          setChangeMessage(
             `Information of ${newName} has already been removed from the server`
           );
         }
@@ -111,14 +118,19 @@ const App = () => {
         setPersons(persons.concat(returnedPerson));
         setNewName('');
         setNewNumber('');
-        toast.success(`Successfully added ${newName}`);
-        setTimeout(() => {
-          toast.dismiss();
-        }, 5000);
+        setNotificationType('success');
+        setChangeMessage(`Successfully added ${newName}`);
       } catch (error) {
-        toast.error(`[Error] ${error.response.data.error}`);
+        setNotificationType('error');
+        setChangeMessage(`[Error] ${error.response.data.error}`);
       }
     }
+
+    // Set a timeout to clear the notification after 5 seconds
+    setTimeout(() => {
+      setChangeMessage('');
+      setNotificationType('');
+    }, 5000);
   };
 
   const handleNewName = (event) => {
@@ -138,19 +150,38 @@ const App = () => {
         props.name.toLowerCase().includes(filterName.toLowerCase())
       )
     : [];
-
     const deletePerson = async (id, name) => {
       if (window.confirm(`Delete ${name}?`)) {
         try {
           await personServices.removePerson(id);
           setPersons(persons.filter((p) => p.id !== id));
-          toast.success(`Successfully deleted ${name}`);
+          setNotificationType('success');
+          setChangeMessage(`Successfully deleted ${name}`);
         } catch (error) {
           console.error('Error deleting person:', error);
+          if (error.response && error.response.status === 404) {
+            // Person not found, might have already been deleted
+            setNotificationType('error');
+            setChangeMessage(`Person ${name} not found or already deleted`);
+          } else {
+            // Other error
+            setNotificationType('error');
+            setChangeMessage(`Error deleting ${name}: ${error.message}`);
+          }
         }
+    
+        // Set a timeout to clear the notification after 5 seconds
+        setTimeout(() => {
+          setChangeMessage('');
+          setNotificationType('');
+        }, 5000);
+    
+        // Refresh the data after deleting a person
+        personServices.getAll().then((result) => {
+          setPersons(result);
+        });
       }
     };
-
   const People = ({ name, number, id }) => {
     return (
       <li>
@@ -171,7 +202,7 @@ const App = () => {
   return (
     <div>
       <Heading text="Phonebook" />
-      <Notification message={changeMessage} />
+      <Notification message={changeMessage} notificationType={notificationType} />
       <Filter
         text="Filter shown with"
         value={filterName}
