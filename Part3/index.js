@@ -150,7 +150,7 @@ app.use(errorHandler)
 
 
 /* Runs the server */
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3002; // Use a different port, e.g., 3002
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+  console.log(`Server running on port ${PORT}`);
+});
