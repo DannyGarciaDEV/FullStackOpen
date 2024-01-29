@@ -1,23 +1,32 @@
 {
-  "dependencies": {
-    "build": "^0.1.4",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.1",
-    "express": "^4.18.2",
-    "mongodb": "^6.3.0",
-    "mongoose": "^8.1.1",
-    "moongose": "^1.0.0",
-    "morgan": "^1.10.0",
-    "node.js": "^0.0.1-security"
-  },
-  "name": "part3",
-  "version": "1.0.0",
+  "name": "fullstackopen-part3",
+  "version": "0.0.1",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ui": "rm -rf build && cd /Users/srs/Documents/FullstackOpen/part3-frontend && yarn build --prod && cp -r build /Users/srs/Documents/FullstackOpen-part3/",
+    "deploy": "git push heroku master",
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
+    "logs:prod": "heroku logs --tail",
+    "lint": "eslint ."
   },
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "author": "Scott Small",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "nodemon": "^2.0.3"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.6.0",
+    "express": "^4.17.1",
+    "mongodb": "^6.3.0",
+    "mongoose": "^5.13.22",
+    "mongoose-unique-validator": "^2.0.3",
+    "moongose": "^1.0.0",
+    "morgan": "^1.10.0"
+  }
 }
