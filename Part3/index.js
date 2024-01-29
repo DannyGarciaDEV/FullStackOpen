@@ -1,106 +1,156 @@
-require('dotenv').config()
+/* Environment Variables */
+const mongoose = require('./mongo.js'); // Assuming mongo.js is in the same directory
+require('dotenv').config();
+
+/* Third-Party Dependencies */
 const express = require('express')
-const morgan = require('morgan')
 const cors = require('cors')
-const Person = require('./models/person')
+const morgan = require('morgan')
 const app = express()
-app.use(express.json())
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
-app.use(cors())
+
+/* Internal Dependencies */
+const Person = require('./models/person')
+
+/* Middleware */
 app.use(express.static('build'))
+app.use(cors())
+app.use(morgan(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res), 'ms',
+    req.method === 'POST' ? JSON.stringify(req.body) : ''
+  ].join(' ')
+}))
+app.use(express.json())
 
-morgan.token('data', (request) => {
-    return JSON.stringify(request.body)
+
+/* List all people */
+app.get('/api/persons', (req, res, next) => {
+  Person.find({}).then(phonebook => {
+    res.json(phonebook.map(person => person.toJSON()))
+  }).catch(error => next(error))
 })
 
-app.get('/api/persons', (request, response) => {
-    Person.find({}).then(persons => {
-        response.json(persons.map(person => person.toJSON()))
-    })
-})
-
-app.post('/api/persons', (request, response, next) => {
-    if (request.body.name === undefined || request.body.number === undefined) {
-        response.status(400).json({ error: 'Missing fields in request' })
-    } else {
-        const person = new Person({
-            name: request.body.name,
-            number: request.body.number,
-            id: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
-        })
-
-        person.save()
-            .then(savedPerson => {
-                response.json(savedPerson.toJSON())
-            })
-            .catch(error => next(error))
+/* List a specific person by ID */
+app.get('/api/persons/:id', (req, res, next) => {
+  Person.findById(req.params.id).then(result => {
+    if (result) {
+      res.json(result)
     }
-})
-
-app.put('/api/persons/:id', (request, response, next) => {
-    if (request.body.id === undefined || request.body.number === undefined) {
-        response.status(400).json({ error: 'Missing fields in request' })
-    } else {
-        const person = {
-            number: request.body.number
-        }
-
-        Person.findByIdAndUpdate(request.params.id, person, { new: true })
-            .then(updatedPerson => {
-                response.json(updatedPerson.toJSON())
-            })
-            .catch(error => next(error))
+    else {
+      res.status(404).end()
     }
+  }).catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (request, response, next) => {
-    Person.findById(request.params.id)
-        .then(person => {
-            if (person) {
-                response.json(person.toJSON())
-            } else {
-                response.status(404).end()
-            }
-        })
-        .catch(error => next(error))
+/* Update an existing person */
+app.put('/api/persons/:id', (req, res, next) => {
+  const updatedPerson = {
+    name: req.body.name,
+    number: req.body.number
+  }
+  Person.findByIdAndUpdate(req.params.id, updatedPerson, { new: true }).then(result => {
+    res.json(result)
+  }).catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response, next) => {
-    Person.findByIdAndDelete(request.params.id)
-        .then(person => {
-            response.json(person.toJSON())
-        })
-        .catch(error => next(error))
-})
+/* Delete a person */
 
-app.get('/info', (request, response, next) => {
-    Person.countDocuments({})
-        .then(count => {
-            let res =
-                `<div>
-                    <p>Phonebook has info for ${count} people</p>
-                    <p>${Date()}</p>
-                </div>`
-            response.send(res)
-        })
-        .catch(error => next(error))
-})
+app.delete('/api/persons/:id', (req, res, next) => {
+    Person.findByIdAndRemove(req.params.id).then(result => {
+      if (result) {
+        res.status(204).end();
+      } else {
+        res.status(404).json({ error: 'Person not found' });
+      }
+    }).catch(error => next(error));
+  });
 
-const errorHandler = (error, request, response, next) => {
-    console.error(error.message)
+/* Add a new person */
+app.post('/api/persons', (req, res, next) => {
+  const { name, number } = req.body;
 
-    if (error.name === 'CastError') {
-        return response.status(400).send({ error: 'malformatted id' })
-    } else if (error.name === 'ValidationError') {
-        return response.status(400).send({ error: 'validation error' })
+  if (!name || !number) {
+    return res.status(400).json({ error: 'Name and number are required' });
+  }
+
+  // Check if the name already exists
+  Person.findOne({ name }).then(existingPerson => {
+    if (existingPerson) {
+      return res.status(400).json({ error: 'Name must be unique' });
     }
 
-    next(error)
+    const newPerson = new Person({
+      name,
+      number
+    });
+
+    newPerson.save().then(response => {
+      res.json(response);
+    }).catch(error => next(error));
+  }).catch(error => next(error));
+});
+/* Status page */
+
+app.get('/info', (req, res, next) => {
+    Person.countDocuments({}).then(count => {
+      const info = `
+        <p>Phonebook has info for ${count} people</p>
+        <p>${new Date()}</p>
+      `;
+      res.send(info);
+    }).catch(error => next(error));
+  });
+
+
+/* List a specific person by ID */
+app.get('/api/persons/:id', (req, res, next) => {
+    Person.findById(req.params.id).then(result => {
+      if (result) {
+        res.json(result);
+      } else {
+        res.status(404).json({ error: 'Person not found' });
+      }
+    }).catch(error => next(error));
+  });
+
+
+  /* Display information for a single phonebook entry */
+  app.get('/api/persons/:id/info', (req, res, next) => {
+    Person.findById(req.params.id).then(result => {
+      if (result) {
+        res.json({
+          name: result.name,
+          number: result.number,
+          id: result._id
+        })
+      } else {
+        res.status(404).json({ error: 'Person not found' })
+      }
+    }).catch(error => next(error))
+  })
+
+
+/* Error Handler */
+const errorHandler = (error, req, res, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError' && error.message.includes('ObjectId')) {
+    return res.status(400).json({ error: 'Malformed ID' })
+  }
+  else if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message })
+  }
+  next(error)
 }
-
 app.use(errorHandler)
 
-const port = process.env.PORT
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`)
+
+/* Runs the server */
+const PORT = process.env.PORT
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
 })
