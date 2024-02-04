@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import apiService from './services/apiService';
-
+import "./App.css"
 function App() {
   const [content, setContent] = useState('');
   const [important, setImportant] = useState(false);
@@ -57,7 +57,7 @@ function App() {
 
   return (
     <div>
-      <h1>This is React WebApp</h1>
+      <h1>Create your Notes</h1>
       <form onSubmit={handleOnSubmit}>
         <input
           type="text"
@@ -82,7 +82,7 @@ function App() {
           {notes.map((note) => (
             <li key={note._id}>
               <strong>{note.content}</strong>
-              <span>{note.important ? ' (Important)' : ''}</span>
+              <span>{note.important ? ' (Important)' : '(Not Important)'}</span>
               <button onClick={() => handleDeleteNote(note._id)}>Delete</button>
               <button
                 onClick={() =>
