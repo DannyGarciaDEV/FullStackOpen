@@ -33,8 +33,7 @@ label {
   display: block;
   margin-bottom: 10px;
 }
-
-button {
+.buttonx{
   background-color: #4caf50;
   color: #fff;
   padding: 10px;
@@ -43,16 +42,13 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #45a049;
-}
 
 h2 {
   color: #333;
 }
 
 ul {
-  list-style: none;
+ 
   padding: 0;
 }
 
@@ -75,6 +71,21 @@ button {
   margin-left: 5px;
 }
 
-button:hover {
-  background-color: #c0392b;
+.delete{
+  background-color: #ee2121;
+  color: #ffffff;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+.update{
+  background-color: #4a6afb;
+  color: #ffffff;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 5px;
 }
