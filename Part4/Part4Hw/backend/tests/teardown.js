@@ -1,3 +1,3 @@
-const teardown = () => process.exit(0)
+module.exports = function teardown() {
 
-module.exports = teardown;
+};
