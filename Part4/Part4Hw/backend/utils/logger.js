@@ -1,15 +1,16 @@
-const { createLogger, transports, format } = require('winston');
-
-const logger = createLogger({
-  transports: [
-    new transports.Console({
-      format: format.combine(
-        format.colorize(),
-        format.simple()
-      )
-    }),
-    new transports.File({ filename: 'combined.log' })
-  ]
-});
-
-module.exports = logger;
+const info = (...params) => {
+    if (process.env.NODE_ENV !== "test") {
+      console.log(...params);
+    }
+  };
+  
+  const error = (...params) => {
+    if (process.env.NODE_ENV !== "test") {
+      console.error(...params);
+    }
+  };
+  
+  module.exports = {
+    info,
+    error,
+  };
