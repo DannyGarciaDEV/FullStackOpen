@@ -8,8 +8,8 @@ const Note = require('../index.js')
 
 
 const initialBlogs = [
-    { content: "Note 1", important: true },
-    { content: "Note 2", important: false },
+    { content: "Blog 1", important: true },
+    { content: "Blog 2", important: false },
     // Add more initial notes as needed
 ]
 
@@ -81,20 +81,20 @@ test('a note may be removed by issuing http delete request', async () => {
     }
 
     const result = await api
-        .post('/api/notes')
+        .post('/api/blogs')
         .send(newBlog)
         // Include any necessary authentication headers if required
 
-    const response = await api.get(`/api/notes/${result.body.id}`)
+    const response = await api.get(`/api/blogs/${result.body.id}`)
     const deleteNote = await api
-        .delete(`/api/notes/${result.body.id}`)
+        .delete(`/api/blogs/${result.body.id}`)
         // Include any necessary authentication headers if required
     expect(deleteNote.status).toBe(204)
 })
 
 test('a note may be edited by issuing http put request', async () => {
     const newBlog = {
-        content: "Editable Note",
+        content: "Editable Blog",
         important: true,
     }
 
