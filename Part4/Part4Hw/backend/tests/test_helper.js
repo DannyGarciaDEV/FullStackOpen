@@ -1,4 +1,4 @@
-const Blog = require('./index.js');
+const Blog = require('../index.js');
 
 export const initBlogs = [
   {
