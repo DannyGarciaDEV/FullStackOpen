@@ -73,7 +73,7 @@ function App() {
           />
           Important
         </label>
-        <button type="submit">Add Note</button>
+        <button className='buttonx' type="submit">Add Note</button>
       </form>
 
       <div>
@@ -83,8 +83,8 @@ function App() {
             <li key={note._id}>
               <strong>{note.content}</strong>
               <span>{note.important ? ' (Important)' : '(Not Important)'}</span>
-              <button onClick={() => handleDeleteNote(note._id)}>Delete</button>
-              <button
+              <button className='delete' onClick={() => handleDeleteNote(note._id)}>Delete</button>
+              <button className='update'
                 onClick={() =>
                   handleUpdateNote(note._id, {
                     content: prompt('Enter updated content:', note.content),
