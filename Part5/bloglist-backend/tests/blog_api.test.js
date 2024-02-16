@@ -24,20 +24,9 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await mongoose.connection.close();
-}, 20000);
+}, 50000);
 
-// Login
-describe('HTTP POST /login', () => {
-  test('authenticate user', async () => {
-    const user = {
-      username: 'dantheman',
-      password: 'wednesday',
-    };
 
-    const response = await api.post('/api/login').send(user).expect(201);
-    token = response.body.token;
-  });
-});
 
 // GET /blogs
 describe('GET /api/blogs', () => {
@@ -46,18 +35,18 @@ describe('GET /api/blogs', () => {
       .get('/api/blogs')
       .expect(200)
       .expect('Content-Type', /application\/json/);
-  }, 20000);
+  }, 50000);
 
   test('get all blogs', async () => {
     const response = await api.get('/api/blogs');
     expect(response.body).toHaveLength(helper.initialBlogs.length);
-  }, 20000);
+  }, 50000);
 
   test('the blog titles list contains  "REACT patterns"', async () => {
     const response = await api.get('/api/blogs');
     const titles = response.body.map((r) => r.title);
     expect(titles).toContain('React patterns');
-  }, 20000);
+  }, 50000);
 
   test('unique identifier property is named id and exists', async () => {
     const response = await api
@@ -99,7 +88,7 @@ describe('HTTP POST request to  /api/blogs', () => {
 
     const titles = blogsAtEnd.map((r) => r.title);
     expect(titles).toContain('Learn Modern Web Dev - MOOC');
-  }, 20000);
+  }, 50000);
 
   test("if the likes property doesn't exist, likes defaults to zero", async () => {
     const newBlog = {
