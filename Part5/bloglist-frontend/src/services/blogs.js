@@ -1,33 +1,35 @@
 import axios from 'axios';
 
-const baseUrl = 'http://localhost:3003/api/blogs';
-let token;
-const config = () => ({
-  headers: {
-    Authorization: token,
-  },
-});
+const baseUrl = '/api/blogs';
 
-const setToken = (rawToken) => {
-  token = `Bearer ${rawToken}`;
-};
+let token = null
+
+
+
+const setToken = newToken => {
+  token = `Bearer ${newToken}`
+}
+
 
 const getAll = () => {
-  const request = axios.get(baseUrl);
-  return request.then((response) => response.data);
-};
+  const request = axios.get(baseUrl)
+  return request.then(response => response.data)
+}
 
-const create = async (newObject) => {
-  const response = await axios.post(baseUrl, newObject, config());
-  return response.data;
-};
+const create = newObject => {
+  const config = {
+    headers: { Authorization: token },
+  }
 
-const update = async (id, newObject) => {
-  const response = await axios.put(`${baseUrl}/${id}`, newObject, config());
-  return response.data;
-};
-const deleteBlog = async (id) => {
-  await axios.delete(`${baseUrl}/${id}`, config());
-};
-// eslint-disable-next-line import/no-anonymous-default-export
-export default { setToken, getAll, create, update, deleteBlog };
+  const request = axios.post(baseUrl, newObject, config)
+  return request.then(response => response.data)
+}
+
+const update = (id, newObject) => {
+  const request = axios.put(`${baseUrl}/${id}`, newObject)
+  return request.then(response => response.data)
+}
+
+export default {
+  getAll, create, update, setToken
+}

@@ -1,17 +1,13 @@
-const { defineConfig } = require('cypress');
+import { defineConfig } from 'cypress'
 
-module.exports = defineConfig({
+export default defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:5173',
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },
-  },
-
-  component: {
-    devServer: {
-      framework: "react",
-      bundler: "vite",
+    baseUrl: 'http://localhost:5173',
+    env: {
+      BACKEND: 'http://localhost:3001/api'
     },
   },
-});
+})
