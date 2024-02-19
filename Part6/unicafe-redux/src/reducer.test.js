@@ -13,7 +13,6 @@ describe('unicafe reducer', () => {
       type: 'DO_NOTHING'
     }
 
-    deepFreeze(initialState)
     const newState = counterReducer(undefined, action)
     expect(newState).toEqual(initialState)
   })
@@ -32,4 +31,6 @@ describe('unicafe reducer', () => {
       bad: 0
     })
   })
+
+  // Additional tests 
 })
