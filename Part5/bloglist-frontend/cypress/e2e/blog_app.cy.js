@@ -64,4 +64,4 @@ describe('Blog App', function() {
       .should('contain', 'Wrong Credentials')
       .and('have.css', 'color', 'rgb(255, 0, 0)')
   })
-})
+});
