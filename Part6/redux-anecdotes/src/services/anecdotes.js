@@ -23,14 +23,18 @@ export const vote = async (id, anecdote) => {
   }
 };
 
-export const createNew = async anecdote => {
+export const createNew = async (anecdote) => {
   try {
+    if (anecdote.length < 5) {
+      throw new Error('Anecdote must be at least 5 characters long');
+    }
+
     const getId = () => (100000 * Math.random()).toFixed(0);
     const newAnecdote = { content: anecdote, votes: 0, id: getId() };
     const request = await axios.post(baseUrl, newAnecdote);
     return request.data;
   } catch (error) {
-    console.error('Error creating new anecdote:', error);
+    console.error('Error creating new anecdote:', error.message);
     throw error;
   }
 };
