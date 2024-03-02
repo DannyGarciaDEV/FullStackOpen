@@ -18,34 +18,55 @@ const useField = (type) => {
 const useCountry = (name) => {
   const [country, setCountry] = useState(null)
 
-  useEffect(() => {})
+  useEffect(() => {
+    const fetchCountry = async () => {
+      try {
+        const response = await axios.get(`https://restcountries.com/v3.1/name/${name}`)
+        if (response.data.length > 0) {
+          setCountry({ data: response.data[0], found: true })
+        } else {
+          setCountry({ found: false })
+        }
+      } catch (error) {
+        console.error('Error fetching country:', error)
+        setCountry({ found: false })
+      }
+    }
+
+    if (name) {
+      fetchCountry()
+    } else {
+      setCountry(null)
+    }
+  }, [name])
 
   return country
 }
 
 const Country = ({ country }) => {
   if (!country) {
-    return null
+    return null;
   }
 
   if (!country.found) {
     return (
       <div>
         not found...
+        
       </div>
-    )
+    );
   }
 
   return (
     <div>
-      <h3>{country.data.name} </h3>
-      <div>capital {country.data.capital} </div>
+      <h3>{country.data.common} </h3>
+      <div>capital {country.data.capital[0]} </div>
       <div>population {country.data.population}</div> 
-      <img src={country.data.flag} height='100' alt={`flag of ${country.data.name}`}/>  
+      <img src={country.data.flags.png} height='100' alt={`flag of ${country.data.name.common}`} />  
     </div>
-  )
-}
-
+  );
+};
+ 
 const App = () => {
   const nameInput = useField('text')
   const [name, setName] = useState('')
