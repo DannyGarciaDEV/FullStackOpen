@@ -1,0 +1,46 @@
+{
+  "notes": [
+    {
+      "content": "custom-hookit aivan mahtavia",
+      "id": 1
+    },
+    {
+      "content": "daniel uwu",
+      "id": 2
+    },
+    {
+      "content": "ultimate-hooks-1",
+      "id": 3
+    },
+    {
+      "content": "ultimate-hooks-2",
+      "id": 4
+    },
+    {
+      "content": "ultimate-hooks-3",
+      "id": 5
+    }
+  ],
+  "persons": [
+    {
+      "name": "mluukkai",
+      "number": "040-5483923",
+      "id": 1
+    },
+    {
+      "name": "john doe",
+      "number": "056-2888282",
+      "id": 2
+    },
+    {
+      "name": "wednesday doe",
+      "number": "911",
+      "id": 3
+    },
+    {
+      "name": "daniel garcia",
+      "number": "420",
+      "id": 4
+    }
+  ]
+}
