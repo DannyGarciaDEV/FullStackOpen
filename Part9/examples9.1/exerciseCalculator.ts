@@ -7,8 +7,10 @@ interface ExerciseResult {
     target: number;
     average: number;
   }
+
   
-  function calculateExercises(dailyHours: number[], target: number): ExerciseResult {
+
+  export function calculateExercises(dailyHours: number[], target: number): ExerciseResult {
     const periodLength = dailyHours.length;
     const trainingDays = dailyHours.filter(day => day > 0).length;
     const totalHours = dailyHours.reduce((acc, day) => acc + day, 0);
@@ -39,17 +41,17 @@ interface ExerciseResult {
       average
     };
   }
-  
+
   const args = process.argv.slice(2);
-  if (args.length < 2) {
-    console.log('Please provide the target and at least one daily exercise hour.');
+if (args.length < 2) {
+  console.log('Please provide the target and at least one daily exercise hour.');
+} else {
+  const target = Number(args[0]);
+  const dailyHours = args.slice(1).map(arg => Number(arg));
+  
+  if (isNaN(target) || dailyHours.some(isNaN)) {
+    console.log('All arguments should be numbers.');
   } else {
-    const target = Number(args[0]);
-    const dailyHours = args.slice(1).map(arg => Number(arg));
-    
-    if (isNaN(target) || dailyHours.some(isNaN)) {
-      console.log('All arguments should be numbers.');
-    } else {
-      console.log(calculateExercises(dailyHours, target));
-    }
+    console.log(calculateExercises(dailyHours, target));
   }
+}
