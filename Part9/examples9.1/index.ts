@@ -1,29 +1,65 @@
 import express from 'express';
-import { calculateBmi } from './bmiCalculator';
+const app = express()
 
-const app = express();
-const PORT = 3003;
+import { bmiCalculator } from './bmiCalculator';
+import { calculateExercises } from './exerciseCalculator'
 
-app.get('/hello', (_req, res) => {
-  res.send('Hello Full Stack!');
-});
+app.use(express.json());
+
+app.get('/hello',(_req, res) =>  {
+    res.send('Hello Full Stack!');
+})
 
 app.get('/bmi', (req, res) => {
-  const height = Number(req.query.height);
-  const weight = Number(req.query.weight);
+    const height = Number(req.query.height);
+    const weight = Number(req.query.weight);
 
-  // Check if height or weight are not valid numbers
-  if (isNaN(height) || isNaN(weight)) {
-    return res.status(400).json({ error: 'malformatted parameters' });
-  }
+    if (isNaN(weight) || isNaN(height)) {
+        res.send({ error: 'malformatted parameters' }).status(400)
+    }
 
-  // Calculate BMI using imported function
-  const bmi = calculateBmi(height, weight);
-  
-  // Return BMI result as JSON
-  return res.json({ weight, height, bmi });
-});
+    const bmi = bmiCalculator(height, weight);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    const bmiData = {
+        weight, 
+        height, 
+        bmi
+    }
+    res.send(bmiData).status(200);
+})
+
+app.post('/exercises', (req, res) => {
+   
+    const body = req.body;
+
+    const dailyExercises: number[] = body.daily_exercises;
+
+    const target: number = body.target;
+
+    if(!target || !dailyExercises){
+        res.status(400).send({ error: 'parameters missing' })
+    }
+
+    if(isNaN(target) || dailyExercises.some(isNaN)){
+        res.status(400).send({ error: 'malformatted parameters' })
+    }
+
+    try{
+        const result = calculateExercises(target, dailyExercises);
+
+        res.send({result}).status(200);
+    }catch(error){
+        if(error instanceof Error){
+           res.status(400).send({ error: error.message })
+        }
+
+        res.status(400).send({ error: 'something went wrong' });
+    }
+        
+})
+
+const PORT = 3003
+
+app.listen(PORT, ()=> {
+    console.log(`Server running on port ${PORT}`)
+})

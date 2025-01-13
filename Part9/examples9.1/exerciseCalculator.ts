@@ -1,37 +1,77 @@
-interface ExerciseResult {
-    periodLength: number;
-    trainingDays: number;
-    success: boolean;
-    rating: number;
-    ratingDescription: string;
-    target: number;
-    average: number;
+interface CalcuValue {
+  target: number;
+  time: number[]; 
+}
+
+const parseArgument = (args: string[]): CalcuValue => {
+  if(args.length < 4)
+      throw new Error('Not enough arguments');
+
+  const time: number[] = [];
+
+  for(let i = 3; i < args.length; i++){
+      if(isNaN(Number(args[2])) && isNaN(Number(args[3]))){
+          throw new Error('provided value were not numbers');
+      }else{
+          time.push(Number(args[i])); 
+      }
+     
   }
 
+  return {
+      target: Number(args[2]),
+      time: time
+  };
   
+};
 
-  export function calculateExercises(dailyHours: number[], target: number): ExerciseResult {
-    const periodLength = dailyHours.length;
-    const trainingDays = dailyHours.filter(day => day > 0).length;
-    const totalHours = dailyHours.reduce((acc, day) => acc + day, 0);
-    const average = totalHours / periodLength;
-    const success = average >= target;
-  
-    let rating: number;
-    let ratingDescription: string;
-  
-    if (average >= target) {
-      rating = 3;
-      ratingDescription = 'Great job!';
-    } else if (average >= target * 0.5) {
-      rating = 2;
-      ratingDescription = 'Not too bad but could be better';
-    } else {
-      rating = 1;
-      ratingDescription = 'You need to work harder';
-    }
-  
-    return {
+interface Result {
+  periodLength: number,
+  trainingDays: number,
+  success: boolean,
+  rating: number,
+  ratingDescription: string,
+  target: number,
+  average: number
+}
+
+
+export const calculateExercises = (target:number, a: number[]): Result => {
+  const periodLength = a.length;
+
+  const trainingDays = a.filter(n => n !== 0).length;
+
+  const average = (a.reduce((a, b) => a + b, 0))/(a.length);
+
+  const success = average >= target;
+
+  const rates = (average : number, target: number): number => {
+      const myRating = average/target;
+      if(myRating >= 1){
+          return 3;
+      }else if(myRating >= 0.9){
+          return 2;
+      }else{
+          return 1;
+      }
+  };
+
+  const descriptions = (rating: number): string => {
+      if(rating === 1){
+          return "More time exercising would do you good";
+      }else if (rating === 2){
+          return "not too bad but could be better";
+      }else{
+          return "excellent!";
+      }
+  };
+
+  const rating = rates(average, target);
+
+  const ratingDescription = descriptions(rating);
+
+
+  return {
       periodLength,
       trainingDays,
       success,
@@ -39,19 +79,19 @@ interface ExerciseResult {
       ratingDescription,
       target,
       average
-    };
-  }
+  }; 
+};
 
-  const args = process.argv.slice(2);
-if (args.length < 2) {
-  console.log('Please provide the target and at least one daily exercise hour.');
-} else {
-  const target = Number(args[0]);
-  const dailyHours = args.slice(1).map(arg => Number(arg));
-  
-  if (isNaN(target) || dailyHours.some(isNaN)) {
-    console.log('All arguments should be numbers.');
-  } else {
-    console.log(calculateExercises(dailyHours, target));
+
+
+try{
+  const { target, time } = parseArgument(process.argv);
+  const result = calculateExercises(target, time);
+  console.log(result);
+}catch(error: unknown){
+  let errorMessage = 'Something bad happend.';
+  if(error instanceof Error){
+      errorMessage += ' Error: ' + error.message;
   }
+  console.log(errorMessage);
 }
